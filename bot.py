@@ -14,7 +14,8 @@ WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 bot = Bot(token=TOKEN, parse_mode="HTML")
 dp = Dispatcher()
-
+from aiogram import Bot
+Bot.set_current(bot)
 
 # ---------------- DATABASE ----------------
 conn = sqlite3.connect("searches.db")
