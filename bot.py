@@ -6,6 +6,7 @@ from aiohttp import web
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
+from aiogram import Bot as BotClass  # фикс контекста
 
 
 # ---------------- CONFIG ----------------
@@ -13,9 +14,12 @@ TOKEN = os.environ.get("TOKEN")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 bot = Bot(token=TOKEN, parse_mode="HTML")
+
+# ФИКС ОШИБКИ "Can't get bot instance from context"
+BotClass.set_current(bot)
+
 dp = Dispatcher()
-from aiogram import Bot
-Bot.set_current(bot)
+
 
 # ---------------- DATABASE ----------------
 conn = sqlite3.connect("searches.db")
@@ -41,7 +45,7 @@ async def fetch_new_items(session, url, user_id) -> list:
 
 # ---------------- BACKGROUND MONITOR ----------------
 async def monitor(bot: Bot):
-    await asyncio.sleep(3)  # Даем серверу запуститься
+    await asyncio.sleep(3)  # даём серверу запуститься
 
     while True:
         async with aiohttp.ClientSession() as session:
@@ -86,7 +90,7 @@ async def on_startup(app):
 
     print("Webhook установлен:", WEBHOOK_URL)
 
-    # Запускаем мониторинг
+    # запуск фонового мониторинга
     asyncio.create_task(monitor(bot))
 
 
@@ -103,6 +107,5 @@ def setup_app():
     return app
 
 
-if name == "__main__":
-    PORT = int(os.environ.get("PORT", 8080))
-    web.run_app(setup_app(), host="0.0.0.0", port=PORT)
+# Запуск приложения
+app = setup_app()
