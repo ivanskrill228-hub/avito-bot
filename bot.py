@@ -3,23 +3,15 @@ import asyncio
 import sqlite3
 import aiohttp
 from aiohttp import web
-
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram import Bot as BotClass  # фикс контекста
-
 
 # ---------------- CONFIG ----------------
 TOKEN = os.environ.get("TOKEN")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 bot = Bot(token=TOKEN, parse_mode="HTML")
-
-# ФИКС ОШИБКИ "Can't get bot instance from context"
-BotClass.set_current(bot)
-
 dp = Dispatcher()
-
 
 # ---------------- DATABASE ----------------
 conn = sqlite3.connect("searches.db")
@@ -33,19 +25,13 @@ c.execute("""
 """)
 conn.commit()
 
-
 # ---------------- PARSER ----------------
 async def fetch_new_items(session, url, user_id) -> list:
-    """
-    Заглушка: возвращает пустой список.
-    Реальный парсер ты вставишь сюда.
-    """
-    return []
-
+    return []   # Заглушка
 
 # ---------------- BACKGROUND MONITOR ----------------
 async def monitor(bot: Bot):
-    await asyncio.sleep(3)  # даём серверу запуститься
+    await asyncio.sleep(3)
 
     while True:
         async with aiohttp.ClientSession() as session:
@@ -69,12 +55,10 @@ async def monitor(bot: Bot):
 
         await asyncio.sleep(30)
 
-
 # ---------------- HANDLERS ----------------
 @dp.message(Command("start"))
-async def start_cmd(msg: types.Message, bot: Bot):
-    await bot.send_message(msg.chat.id, "Бот работает через вебхук 🎯")
-
+async def start_cmd(msg: types.Message):
+    await msg.answer("Бот работает через вебхук 🎯")
 
 # ---------------- WEBHOOK ----------------
 async def handle_webhook(request):
@@ -83,20 +67,13 @@ async def handle_webhook(request):
     await dp.dispatch(update, bot)
     return web.Response()
 
-
 async def on_startup(app):
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_webhook(WEBHOOK_URL)
-
-    print("Webhook установлен:", WEBHOOK_URL)
-
-    # запуск фонового мониторинга
     asyncio.create_task(monitor(bot))
-
 
 async def on_shutdown(app):
     await bot.session.close()
-
 
 # ---------------- APP SERVER ----------------
 def setup_app():
@@ -105,7 +82,3 @@ def setup_app():
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     return app
-
-
-# Запуск приложения
-app = setup_app()
