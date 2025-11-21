@@ -122,6 +122,6 @@ def setup_app():
     return app
 
 
-if name == "__main__":
+if __name__ == "__main__":
     PORT = int(os.environ.get("PORT", 8080))
     web.run_app(setup_app(), host="0.0.0.0", port=PORT)
