@@ -98,3 +98,18 @@ def setup_app():
 
 
 app = setup_app()
+from aiohttp import web
+
+async def handle_webhook(request):
+    data = await request.json()
+    update = types.Update(**data)
+    await dp.process_update(update)
+    return web.Response(text="OK")
+
+# Создаем приложение для Render
+app = web.Application()
+app.router.add_post('/', handle_webhook)
+
+# Запуск локально (Render запускает gunicorn)
+if name == "__main__":
+    web.run_app(app, host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
