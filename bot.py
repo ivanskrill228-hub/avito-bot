@@ -31,10 +31,10 @@ async def fetch_new_items(session, url, user_id):
         for link in links:
             full_url = "https://www.avito.ru" + link.split('?')[0]
             item_id = get_id(full_url)
-            c.execute("SELECT 1 FROM seen WHERE user_id=? AND item_id=?", (user_id, item_id))
-            if not c.fetchone():
-                c.execute("INSERT INTO seen VALUES (?, ?)", (user_id, item_id))
-                conn.commit()
+           c.execute("SELECT 1 FROM seen WHERE user_id=? AND item_id=?", "(user_id, item_id))
+if not c.fetchone():
+               c.execute("INSERT INTO seen VALUES (?, ?)", (user_id, item_id))
+    conn.commit()
                 async with session.get(full_url, headers=headers) as r:
                     itext = await r.text()
                 title = re.search(r'<h1[^>]*>([^<]+)</h1>', itext)
