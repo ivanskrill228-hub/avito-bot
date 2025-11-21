@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: avito-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn bot:app --worker-class aiohttp.GunicornWebWorker --bind 0.0.0.0:$PORT
