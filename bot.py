@@ -3,8 +3,10 @@ import asyncio
 import sqlite3
 import aiohttp
 from aiohttp import web
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
+
 
 # ---------------- CONFIG ----------------
 TOKEN = os.environ.get("TOKEN")
@@ -12,6 +14,7 @@ WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 bot = Bot(token=TOKEN, parse_mode="HTML")
 dp = Dispatcher()
+
 
 # ---------------- DATABASE ----------------
 conn = sqlite3.connect("searches.db")
@@ -25,13 +28,15 @@ c.execute("""
 """)
 conn.commit()
 
+
 # ---------------- PARSER ----------------
 async def fetch_new_items(session, url, user_id) -> list:
-    return []   # Заглушка
+    return []   # заглушка
+
 
 # ---------------- BACKGROUND MONITOR ----------------
-async def monitor(bot: Bot):
-    await asyncio.sleep(3)
+async def monitor():
+    await asyncio.sleep(5)
 
     while True:
         async with aiohttp.ClientSession() as session:
@@ -55,25 +60,33 @@ async def monitor(bot: Bot):
 
         await asyncio.sleep(30)
 
+
 # ---------------- HANDLERS ----------------
 @dp.message(Command("start"))
 async def start_cmd(msg: types.Message):
-    await msg.answer("Бот работает через вебхук 🎯")
+    await msg.answer("Бот запущен и работает через вебхук 🚀")
+
 
 # ---------------- WEBHOOK ----------------
 async def handle_webhook(request):
     data = await request.json()
     update = types.Update.model_validate(data)
     await dp.dispatch(update, bot)
-    return web.Response()
+    return web.Response(text="OK")
+
 
 async def on_startup(app):
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_webhook(WEBHOOK_URL)
-    asyncio.create_task(monitor(bot))
+
+    asyncio.create_task(monitor())
+
+    print("Webhook установлен:", WEBHOOK_URL)
+
 
 async def on_shutdown(app):
     await bot.session.close()
+
 
 # ---------------- APP SERVER ----------------
 def setup_app():
@@ -82,3 +95,6 @@ def setup_app():
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     return app
+
+
+app = setup_app()
