@@ -55,4 +55,4 @@ async def monitor():
         async with aiohttp.ClientSession() as session:
             c.execute("SELECT DISTINCT user_id FROM searches")
             for (user_id,) in c.fetchall():
-                c.execute("SELECT url, name FROM searches WHERE
+                c.execute("SELECT url, name FROM searches WHERE user_id=?", (user_id,))
